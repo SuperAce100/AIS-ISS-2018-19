@@ -768,7 +768,7 @@ BCD2ASCII:
 ' For text
 '**************
 '
-ID       DATA "BIOS Templet Program 2013-2014 Ver 131",CR     'Name of School/Project
+ID       DATA "AIS-ISS Project 2018/19 VER 1 : Slime Mold Maze ",CR     'Name of School/Project
          DATA "Data Download Number "
 LastPN   DATA "ML00000",CR                         'photo file name
 ADate    DATA "00/00/00 at "                       'RTC date
