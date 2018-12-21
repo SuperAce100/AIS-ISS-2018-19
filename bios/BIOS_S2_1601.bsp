@@ -441,17 +441,21 @@ TakePhotoReturn:
          ' Values in return back are lost when jumping to Slot 6
          tempReg0 = 4 'Destination Index (EventTableReturn)
          RUN 0        'Destination Slot
-
-Event2: DEBUG CR,"REB2: 5s Pump Pulse" ,CR
-        I2COUT InternI2c, PCF8574address,[$EF]     'IO5 high, all others off
-        PAUSE 5000 'Pause 5 seconds
+         
+' Event 2 is run pump for 70 seconds 
+Event2: DEBUG CR,"REB2: 5s Pump Pulse" ,CR 
+        I2COUT InternI2c, PCF8574address,[%01111111]     'IO7 high, all others off
+        PAUSE 70000 'Pause 70 seconds
         I2COUT InternI2c, PCF8574address,[$FF]     'All IO pins off
         'Don't touch the next two statements
         tempReg0 = 4 'Destination Index (EventTableReturn)
         RUN 0        'Destination Slot
 
+' Event 3 is run pump for 35 seconds 
 Event3: DEBUG CR,"REB3: empty"  ,CR
-        I2COUT internI2C, PCF8574address, [%01011111]    'IO7, IO5 On
+        I2COUT InternI2c, PCF8574address,[%01111111]     'IO7 high, all others off
+        PAUSE 35000 'Pause 35 seconds
+        I2COUT InternI2c, PCF8574address,[$FF]     'All IO pins off
         tempReg0 = 4 'Destination Index (EventTableReturn)
         RUN 0        'Destination Slot
 
