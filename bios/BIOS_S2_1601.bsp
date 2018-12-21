@@ -442,16 +442,20 @@ TakePhotoReturn:
          tempReg0 = 4 'Destination Index (EventTableReturn)
          RUN 0        'Destination Slot
 
-Event2: DEBUG CR,"REB2: 5s Pump Pulse" ,CR
-        I2COUT InternI2c, PCF8574address,[$EF]     'IO5 high, all others off
-        PAUSE 5000 'Pause 5 seconds
+' Event 2 is run pump for 70 seconds 
+Event2: DEBUG CR,"REB2: 5s Pump Pulse" ,CR 
+        I2COUT InternI2c, PCF8574address,[%01111111]     'IO7 high, all others off
+        PAUSE 70000 'Pause 70 seconds
         I2COUT InternI2c, PCF8574address,[$FF]     'All IO pins off
         'Don't touch the next two statements
         tempReg0 = 4 'Destination Index (EventTableReturn)
         RUN 0        'Destination Slot
 
+' Event 3 is run pump for 35 seconds 
 Event3: DEBUG CR,"REB3: empty"  ,CR
-        I2COUT internI2C, PCF8574address, [%01011111]    'IO7, IO5 On
+        I2COUT InternI2c, PCF8574address,[%01111111]     'IO7 high, all others off
+        PAUSE 35000 'Pause 35 seconds
+        I2COUT InternI2c, PCF8574address,[$FF]     'All IO pins off
         tempReg0 = 4 'Destination Index (EventTableReturn)
         RUN 0        'Destination Slot
 
@@ -518,7 +522,7 @@ P3vector:
          '    Day  Hour  Min   Tag  EventByte
  ETable DATA  00,  00,   01,   $FF,     01   'Row 0
         DATA  00,  00,   02,   $FF,     02   'Row 1
-        DATA  00,  00,   04,   $FF,     03   'Row 2
+        DATA  00,  00,   03,   $FF,     03   'Row 2
         DATA  00,  00,   00,   $FF,     00   'Row 3
         DATA  01,  04,   59,   $FF,     00   'Row 4   Take Inspection Photo
         DATA  01,  05,   00,   $FF,     00   'Row 5   5s Pump Pulse
