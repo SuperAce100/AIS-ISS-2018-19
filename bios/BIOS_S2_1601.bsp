@@ -516,9 +516,9 @@ P3vector:
 
 
          '    Day  Hour  Min   Tag  EventByte
- ETable DATA  00,  00,   00,   $FF,     00   'Row 0
-        DATA  00,  00,   01,   $FF,     03   'Row 1
-        DATA  00,  00,   00,   $FF,     00   'Row 2
+ ETable DATA  00,  00,   01,   $FF,     01   'Row 0
+        DATA  00,  00,   02,   $FF,     02   'Row 1
+        DATA  00,  00,   03,   $FF,     03   'Row 2
         DATA  00,  00,   00,   $FF,     00   'Row 3
         DATA  01,  04,   59,   $FF,     00   'Row 4   Take Inspection Photo
         DATA  01,  05,   00,   $FF,     00   'Row 5   5s Pump Pulse
