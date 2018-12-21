@@ -422,12 +422,12 @@ Event0: DEBUG CR,"REB0",CR
         RUN 0        'Destination Slot
 
 Event1: DEBUG CR,"REB1: TakePhoto",CR
-         HIGH 14    'Turns on the LED's
+         HIGH 4    'Turns on the LED's
          '
          '   Take a High Resoluation Photo of the Chamber
          'TTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTT
          PUT    CameraRes,Camera640        'Template default
-         PUT    CameraQua,CameraNormal     'set to Normal
+         PUT    CameraQua,CameraBest     'set to Normal
 
          PUT VectorFromSlot,2 'Return Slot
          PUT VectorFromNum,1  'Return Index
@@ -437,7 +437,7 @@ Event1: DEBUG CR,"REB1: TakePhoto",CR
 TakePhotoReturn:
          'TTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTT
          '
-         LOW 14     'Turns off the LED's
+         LOW 4     'Turns off the LED's
          ' Values in return back are lost when jumping to Slot 6
          tempReg0 = 4 'Destination Index (EventTableReturn)
          RUN 0        'Destination Slot
@@ -553,5 +553,6 @@ P3vector:
         DATA  34,  00,   00,   $FF,     00   'Row 38
         DATA  35,  00,   00,   $FF,     00   'Row 39
         DATA  36,  00,   00,   $FF,     00   'Row 40
+        DATA  36,  10,   00,   $FF,     03   'Row 41
 
 PumpIter DATA   36  '3 minute
