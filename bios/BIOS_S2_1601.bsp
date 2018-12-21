@@ -443,19 +443,11 @@ TakePhotoReturn:
          RUN 0        'Destination Slot
 
 ' Event 2 is run pump for 70 seconds 
-Event2: DEBUG CR,"REB2: 5s Pump Pulse" ,CR 
-        I2COUT InternI2c, PCF8574address,[%01111111]     'IO7 high, all others off
-        PAUSE 70000 'Pause 70 seconds
-        I2COUT InternI2c, PCF8574address,[$FF]     'All IO pins off
-        'Don't touch the next two statements
-        tempReg0 = 4 'Destination Index (EventTableReturn)
-        RUN 0        'Destination Slot
-
-' Event 3 is run pump for 35 seconds 
-Event3: DEBUG CR,"REB3: empty"  ,CR
+Event2: DEBUG CR,"REB2: 35s Pump Pulse" ,CR 
         I2COUT InternI2c, PCF8574address,[%01111111]     'IO7 high, all others off
         PAUSE 35000 'Pause 35 seconds
         I2COUT InternI2c, PCF8574address,[$FF]     'All IO pins off
+        'Don't touch the next two statements
         tempReg0 = 4 'Destination Index (EventTableReturn)
         RUN 0        'Destination Slot
 
@@ -520,22 +512,22 @@ P3vector:
 
 
          '    Day  Hour  Min   Tag  EventByte
- ETable DATA  00,  00,   01,   $FF,     01   'Row 0
-        DATA  00,  00,   02,   $FF,     02   'Row 1
-        DATA  00,  00,   03,   $FF,     03   'Row 2
-        DATA  00,  00,   00,   $FF,     00   'Row 3
-        DATA  01,  04,   59,   $FF,     00   'Row 4   Take Inspection Photo
-        DATA  01,  05,   00,   $FF,     00   'Row 5   5s Pump Pulse
-        DATA  01,  05,   01,   $FF,     00   'Row 6   Take photo to record Event Table State
-        DATA  01,  05,   02,   $FF,     00   'Row 7   Replay Take Replay Exit Photo
-        DATA  01,  05,   03,   $FF,     00   'Row 8   Take another photo to record Event Table state
-        DATA  05,  00,   00,   $FF,     00   'Row 9
-        DATA  06,  00,   00,   $FF,     00   'Row 10
-        DATA  07,  00,   00,   $FF,     00   'Row 11
-        DATA  08,  00,   00,   $FF,     00   'Row 12
-        DATA  09,  00,   00,   $FF,     00   'Row 13
-        DATA  10,  00,   00,   $FF,     00   'Row 14
-        DATA  11,  00,   00,   $FF,     00   'Row 15
+ ETable DATA  00,  00,   01,   $FF,     01   'Row 0   (DAY 1) At 24 hours, take a picture (before water)
+        DATA  00,  00,   02,   $FF,     02   'Row 1   (DAY 1) First 35 second pump 
+        DATA  00,  00,   03,   $FF,     02   'Row 2   (DAY 1) Second 35 second pump (after 2 minutes to let the water absorb)
+        DATA  00,  00,   04,   $FF,     01   'Row 3   (DAY 1) Take a picture (after water)
+        DATA  00,  00,   05,   $FF,     01   'Row 4   (DAY 2) Take a picture before water
+        DATA  00,  00,   06,   $FF,     02   'Row 5   (DAY 2) One 35-second water pulse
+        DATA  00,  00,   07,   $FF,     01   'Row 6   (DAY 2) Take another picture after watering
+        DATA  00,  00,   08,   $FF,     01   'Row 7   (DAY 3) Take a picture before water
+        DATA  00,  00,   09,   $FF,     02   'Row 8   (DAY 3) One 35-second water pulse
+        DATA  00,  00,   010,  $FF,     01   'Row 9   (DAY 3) Take another picture after watering
+        DATA  00,  00,   011,  $FF,     01   'Row 10  (DAY 4) Take a picture 
+        DATA  00,  00,   012,  $FF,     01   'Row 11  (DAY 5) Take a picture 
+        DATA  00,  00,   013,  $FF,     01   'Row 12  (DAY 6) Take a picture 
+        DATA  00,  00,   014,  $FF,     01   'Row 13  (DAY 7) Take a picture 
+        DATA  00,  00,   015,  $FF,     01   'Row 14  (DAY 8) Take a picture 
+        DATA  11,  00,   016,  $FF,     00   'Row 15
         DATA  12,  00,   00,   $FF,     00   'Row 16
         DATA  13,  00,   00,   $FF,     00   'Row 17
         DATA  14,  00,   00,   $FF,     00   'Row 18
