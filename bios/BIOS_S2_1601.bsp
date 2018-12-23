@@ -411,7 +411,7 @@ FoundEvent:
   STORE DataStorage
   BRANCH UserVar3,[Event0,    'Event 0 (do nothing)
   Event1,                     'Event 1 (
-  Event2                     'Event 2 
+  Event2]                     'Event 2 
 
   UserVar3 = 0                 'Error
   DEBUG CR,"Event Byte is out of range",CR
