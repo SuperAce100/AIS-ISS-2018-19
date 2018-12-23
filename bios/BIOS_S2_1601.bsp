@@ -373,6 +373,8 @@ ReturnBack:
   UserVar3 = 0 'Set EventByte to default "no event"
 
  STORE 2      'Event Table is stored in this slot
+ 'check if minute = 0 or 15 or 30 or 45. then GOTO FoundEvent
+  IF (UserVar0//15)=0 THEN GOTO Event1
   FOR TempReg0 = 0 TO 10
     READ ETable+(TempReg0*5+0),TempReg1 : IF TempReg1 <> UserVar2 THEN GOTO NextRow  'Check Day
     READ ETable+(TempReg0*5+1),TempReg1 : IF TempReg1 <> UserVar1 THEN GOTO NextRow 'Check Hour
@@ -422,7 +424,7 @@ Event0: DEBUG CR,"REB0",CR
         RUN 0        'Destination Slot
 
 Event1: DEBUG CR,"REB1: TakePhoto",CR
-         HIGH 4    'Turns on the LED's
+         I2COUT InternI2c, PCF8574address,[%11011111]    'Turns on the LED's
          '
          '   Take a High Resoluation Photo of the Chamber
          'TTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTT
@@ -437,12 +439,12 @@ Event1: DEBUG CR,"REB1: TakePhoto",CR
 TakePhotoReturn:
          'TTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTT
          '
-         LOW 4     'Turns off the LED's
+         I2COUT InternI2c, PCF8574address,[$FF]     'Turns off the LED's
          ' Values in return back are lost when jumping to Slot 6
          tempReg0 = 4 'Destination Index (EventTableReturn)
          RUN 0        'Destination Slot
 
-' Event 2 is run pump for 70 seconds 
+' Event 2 is run pump for 35 seconds 
 Event2: DEBUG CR,"REB2: 35s Pump Pulse" ,CR 
         I2COUT InternI2c, PCF8574address,[%01111111]     'IO7 high, all others off
         PAUSE 35000 'Pause 35 seconds
