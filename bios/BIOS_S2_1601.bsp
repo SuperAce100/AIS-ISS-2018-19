@@ -451,34 +451,6 @@ Event2: DEBUG CR,"REB2: 35s Pump Pulse" ,CR
         tempReg0 = 4 'Destination Index (EventTableReturn)
         RUN 0        'Destination Slot
 
-Event4: DEBUG CR,"REB4:Replay" ,CR
-        STORE 2
-        READ PumpIter,TempReg0
-        TempReg0 = TempReg0-1            'decrement pump iteration count
-        DEBUG "Pump Iteration ",DEC2 TempReg0,CR,CR
-        WRITE PumpIter,TempReg0          'store count in Pump Iterator
-
-        IF TempReg0 < 1 THEN
-           DEBUG "Pump Iter value = ", DEC2 tempreg0," exiting replay",CR,CR
-           WRITE PumpIter,36 'restore value
-           GOTO DmpOut 'timed out
-        ENDIF
-
-        STORE 0
-        WRITE DurDay,1 : WRITE DurHour,0 : WRITE DurMin,0 'Reset Event Table State
-        STORE 2
-          FOR TempReg0 = 5 TO 6
-          WRITE ETable+(TempReg0*5)+3,$FF 'reset tag fields to allow a repeat cycle
-        NEXT
-DmpOut: STORE DataStorage
-        tempReg0 = 4 'Destination Index (EventTableReturn)
-        RUN 0        'Destination Slot
-
-
-
-
-
-
 
 
 
