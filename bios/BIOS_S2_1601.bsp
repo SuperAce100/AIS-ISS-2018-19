@@ -512,47 +512,13 @@ P3vector:
 
 
          '    Day  Hour  Min   Tag  EventByte
- ETable DATA  00,  00,   01,   $FF,     01   'Row 0   (DAY 1) At 24 hours, take a picture (before water)
-        DATA  00,  00,   02,   $FF,     02   'Row 1   (DAY 1) First 35 second pump 
-        DATA  00,  00,   03,   $FF,     02   'Row 2   (DAY 1) Second 35 second pump (after 2 minutes to let the water absorb)
-        DATA  00,  00,   04,   $FF,     01   'Row 3   (DAY 1) Take a picture (after water)
-        DATA  00,  00,   05,   $FF,     01   'Row 4   (DAY 2) Take a picture before water
-        DATA  00,  00,   06,   $FF,     02   'Row 5   (DAY 2) One 35-second water pulse
-        DATA  00,  00,   07,   $FF,     01   'Row 6   (DAY 2) Take another picture after watering
-        DATA  00,  00,   08,   $FF,     01   'Row 7   (DAY 3) Take a picture before water
-        DATA  00,  00,   09,   $FF,     02   'Row 8   (DAY 3) One 35-second water pulse
-        DATA  00,  00,   010,  $FF,     01   'Row 9   (DAY 3) Take another picture after watering
-        DATA  00,  00,   011,  $FF,     01   'Row 10  (DAY 4) Take a picture 
-        DATA  00,  00,   012,  $FF,     01   'Row 11  (DAY 5) Take a picture 
-        DATA  00,  00,   013,  $FF,     01   'Row 12  (DAY 6) Take a picture 
-        DATA  00,  00,   014,  $FF,     01   'Row 13  (DAY 7) Take a picture 
-        DATA  00,  00,   015,  $FF,     01   'Row 14  (DAY 8) Take a picture 
-        DATA  11,  00,   016,  $FF,     00   'Row 15
-        DATA  12,  00,   00,   $FF,     00   'Row 16
-        DATA  13,  00,   00,   $FF,     00   'Row 17
-        DATA  14,  00,   00,   $FF,     00   'Row 18
-        DATA  15,  00,   00,   $FF,     00   'Row 19
-        DATA  16,  00,   00,   $FF,     00   'Row 20
-        DATA  17,  00,   00,   $FF,     00   'Row 21
-        DATA  18,  00,   00,   $FF,     00   'Row 22
-        DATA  19,  00,   00,   $FF,     00   'Row 23
-        DATA  20,  00,   00,   $FF,     00   'Row 24
-        DATA  21,  00,   00,   $FF,     00   'Row 25
-        DATA  22,  00,   00,   $FF,     00   'Row 26
-        DATA  23,  00,   00,   $FF,     00   'Row 27
-        DATA  24,  00,   00,   $FF,     00   'Row 28
-        DATA  25,  00,   00,   $FF,     00   'Row 29
-        DATA  26,  00,   00,   $FF,     00   'Row 30
-        DATA  27,  00,   00,   $FF,     00   'Row 31
-        DATA  28,  00,   00,   $FF,     00   'Row 32
-        DATA  29,  00,   00,   $FF,     00   'Row 33
-        DATA  30,  00,   00,   $FF,     00   'Row 34
-        DATA  31,  00,   00,   $FF,     00   'Row 35
-        DATA  32,  00,   00,   $FF,     00   'Row 36
-        DATA  33,  00,   00,   $FF,     00   'Row 37
-        DATA  34,  00,   00,   $FF,     00   'Row 38
-        DATA  35,  00,   00,   $FF,     00   'Row 39
-        DATA  36,  00,   00,   $FF,     00   'Row 40
-        DATA  36,  10,   00,   $FF,     03   'Row 41
-
-PumpIter DATA   36  '3 minute
+ ETable DATA  01,  04,   00,   $FF,     00   'Row 0   (DAY 1) At 24 hours, take a picture (before water)
+        DATA  01,  04,   12,   $FF,     02   'Row 1   (DAY 1) First 35 second pump 
+        DATA  01,  04,   14,   $FF,     02   'Row 2   (DAY 1) Second 35 second pump (after 2 minutes to let the water absorb)
+        DATA  00,  00,   00,   $FF,     00   'Row 3   (DAY 1) Take a picture (after water)
+        DATA  00,  00,   00,   $FF,     00   'Row 4   (DAY 2) Take a picture before water
+        DATA  02,  04,   12,   $FF,     02   'Row 5   (DAY 2) One 35-second water pulse
+        DATA  00,  00,   00,   $FF,     00   'Row 6   (DAY 2) Take another picture after watering
+        DATA  00,  00,   00,   $FF,     00   'Row 7   (DAY 3) Take a picture before water
+        DATA  03,  04,   12,   $FF,     02   'Row 8   (DAY 3) One 35-second water pulse
+        DATA  00,  00,   00,   $FF,     00   'Row 9   (DAY 3) Take another picture after watering
