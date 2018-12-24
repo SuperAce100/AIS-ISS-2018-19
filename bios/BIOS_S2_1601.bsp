@@ -451,6 +451,9 @@ Event2: DEBUG CR,"REB2: 35s Pump Pulse" ,CR
         tempReg0 = 4 'Destination Index (EventTableReturn)
         RUN 0        'Destination Slot
 
+DmpOut: STORE DataStorage
+        tempReg0 = 4 'Destination Index (EventTableReturn)
+        RUN 0        'Destination Slot
 
 
 
