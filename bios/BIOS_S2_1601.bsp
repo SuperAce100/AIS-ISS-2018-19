@@ -411,7 +411,8 @@ FoundEvent:
   STORE DataStorage
   BRANCH UserVar3,[Event0,    'Event 0 (do nothing)
   Event1,                     'Event 1 (
-  Event2]                     'Event 2 
+  Event2,                     'Event 2 
+  Event3]                     'Event 3
 
   UserVar3 = 0                 'Error
   DEBUG CR,"Event Byte is out of range",CR
@@ -446,6 +447,15 @@ TakePhotoReturn:
 Event2: DEBUG CR,"REB2: 35s Pump Pulse" ,CR 
         I2COUT InternI2c, PCF8574address,[%01111111]     'IO7 high, all others off
         PAUSE 35000 'Pause 35 seconds
+        I2COUT InternI2c, PCF8574address,[$FF]     'All IO pins off
+        'Don't touch the next two statements
+        tempReg0 = 4 'Destination Index (EventTableReturn)
+        RUN 0        'Destination Slot
+
+' Event 3 is run pump for 15 seconds 
+Event3: DEBUG CR,"REB2: 15s Pump Pulse" ,CR 
+        I2COUT InternI2c, PCF8574address,[%01111111]     'IO7 high, all others off
+        PAUSE 15000 'Pause 15 seconds
         I2COUT InternI2c, PCF8574address,[$FF]     'All IO pins off
         'Don't touch the next two statements
         tempReg0 = 4 'Destination Index (EventTableReturn)
@@ -487,13 +497,13 @@ P3vector:
 
 
          '    Day  Hour  Min   Tag  EventByte
- ETable DATA  01,  04,   00,   $FF,     00   'Row 0   (DAY 1) At 24 hours, take a picture (before water)
-        DATA  01,  04,   12,   $FF,     02   'Row 1   (DAY 1) First 35 second pump 
-        DATA  01,  04,   14,   $FF,     02   'Row 2   (DAY 1) Second 35 second pump (after 2 minutes to let the water absorb)
-        DATA  00,  00,   00,   $FF,     00   'Row 3   (DAY 1) Take a picture (after water)
-        DATA  00,  00,   00,   $FF,     00   'Row 4   (DAY 2) Take a picture before water
-        DATA  02,  04,   12,   $FF,     02   'Row 5   (DAY 2) One 35-second water pulse
-        DATA  00,  00,   00,   $FF,     00   'Row 6   (DAY 2) Take another picture after watering
-        DATA  00,  00,   00,   $FF,     00   'Row 7   (DAY 3) Take a picture before water
-        DATA  03,  04,   12,   $FF,     02   'Row 8   (DAY 3) One 35-second water pulse
-        DATA  00,  00,   00,   $FF,     00   'Row 9   (DAY 3) Take another picture after watering
+ ETable DATA  01,  04,   11,   $FF,     03   'Row 0   (DAY 1) Initialize pump with 15 second water pulse
+        DATA  01,  04,   12,   $FF,     02   'Row 1   (DAY 1) First 35-second water pulse 
+        DATA  01,  04,   14,   $FF,     02   'Row 2   (DAY 1) Second One 35-second water pulse (after 2 minutes to let the water absorb)
+        DATA  00,  00,   00,   $FF,     00   'Row 3   (DAY 0) 
+        DATA  00,  00,   00,   $FF,     00   'Row 4   (DAY 0) 
+        DATA  03,  04,   12,   $FF,     02   'Row 5   (DAY 3) One 35-second water pulse
+        DATA  00,  00,   00,   $FF,     00   'Row 6   (DAY 0) 
+        DATA  00,  00,   00,   $FF,     00   'Row 7   (DAY 0) 
+        DATA  05,  04,   12,   $FF,     02   'Row 8   (DAY 5) One 35-second water pulse
+        DATA  00,  00,   00,   $FF,     00   'Row 9   (DAY 0) 
