@@ -422,7 +422,7 @@ Event0: DEBUG CR,"REB0",CR
         RUN 0        'Destination Slot
 
 Event1: DEBUG CR,"REB1: TakePhoto",CR
-         I2COUT InternI2c, PCF8574address,[%11011111]    'Turns on the LED's
+         'I2COUT InternI2c, PCF8574address,[%11011111]    'Turns on the LED's
          '
          '   Take a High Resoluation Photo of the Chamber
          'TTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTT
@@ -437,7 +437,7 @@ Event1: DEBUG CR,"REB1: TakePhoto",CR
 TakePhotoReturn:
          'TTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTT
          '
-         I2COUT InternI2c, PCF8574address,[$FF]     'Turns off the LED's
+         'I2COUT InternI2c, PCF8574address,[$FF]     'Turns off the LED's
          ' Values in return back are lost when jumping to Slot 6
          tempReg0 = 4 'Destination Index (EventTableReturn)
          RUN 0        'Destination Slot

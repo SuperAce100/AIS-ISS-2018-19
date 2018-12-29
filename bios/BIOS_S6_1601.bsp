@@ -576,6 +576,7 @@ SelectQuality:
     'Set the quality properly
     '
 GetPicture:
+    I2COUT InternI2c, PCF8574address,[%11011111]    'Turns on the LED's
     FOR tempreg1 = 0 TO 150                                    'again 150 times
     LOW cameraCS                                               'enable camera
     FOR xcounter = 0 TO 7                                      'set to send 8 bytes
@@ -591,6 +592,7 @@ GetPicture:
     GOTO cameraerror
     '
     '
+
 readydownload:
     LOW cameraCS                                               'endable camera
     FOR xcounter = 0 TO 7                                      'set for 8 bytes
@@ -601,6 +603,7 @@ readydownload:
     NEXT                                                       'get next byte
     HIGH cameraCS                                              'disable camera select
     TempWord = text(5) + (text(6)*256) + (text(7)*256*256)     'Array has size of photo
+    I2COUT InternI2c, PCF8574address,[$ff]    'Turns off the LED's
     '
     'Photo length is in TempWord and camera is set to download the photo
     'Now what to do with the data
