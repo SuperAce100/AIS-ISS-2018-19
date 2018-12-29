@@ -1,15 +1,15 @@
 ' {$STAMP BS2p}
 ' {$PBASIC 2.5}
-' {$PORT COM6}
+' {$PORT COM4}
 '**************************************************
 '
-'  Program Slot 1 =  Reset, calibration, and initialization procedures
+'  Program Slot 3 = program
 '
 'XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 'XXXXXXXX >>  Start Here to Copy Header entries  <<  XXXXXXXXXXXXXXXXXX
 'XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 '
-version   CON    1602
+version   CON    1601
 '
 ' 2012
 ' 1. added test for payload interface boards
@@ -19,7 +19,7 @@ version   CON    1602
 '     Conditional Assemblies
 '
 #DEFINE FlyConfig = 1              '1=Set to Flight Configuration, 0=Test Configuration
-#DEFINE fastclock = 2              '0=Normal Time X1, 1=Medium Time ~X17 2=Fast Time ~X60
+#DEFINE fastclock = 0              '0=Normal Time X1, 1=Medium Time ~X17 2=Fast Time ~X60
 #DEFINE testreset = 1              '1=test reset and reset count
 #DEFINE SaySlot   = 1              '1=Say Slot with vector
 #DEFINE Sayit = 1                  '1=Say what is happening
@@ -303,13 +303,13 @@ SysCPUcal    CON   $C002    'External E2RAM calibration locations
 '   Enter with TempReg1 containing the program index to run in this slot
 '*************************************************************************
   '
-  #IF SaySlot=1 #THEN
-  DEBUG ">S1-V",DEC TempReg1,CR
+  #IF SaySlot =1 #THEN
+  DEBUG ">S3-V",DEC TempReg1,CR
   #ENDIF
-  BRANCH TempReg1,[PayloadTest,        '0 PayloadTest
-  HeartBeatReturn,                     '1 vector to this program
-  McMekReturn,                         '2 vector to this program
-  P3vector]                            '3 vector to this program
+  BRANCH TempReg1,[testtext,           '0 vector flight condition setup override
+ ReturnBack,                         '1 vector to run chamber
+ ReturnBack,                             '2 vector to init the dac to balanced
+  SimDownload]                         '3 vector to this program
   '
 
 '*************************************************************************
@@ -321,7 +321,7 @@ SysCPUcal    CON   $C002    'External E2RAM calibration locations
 '   routine can be used to return to the originating program.
 '*************************************************************************
   '
-InSlot  CON    1               'Define this slot, each slot is numbered
+InSlot  CON    3               'Define this slot, each slot is numbered
   '
   '***********************************************************************
   '       To go to a slot and set a return
@@ -346,6 +346,7 @@ ReturnBack:
   GET VectorFromSlot,TempReg0    'fetch the program slot where the routine was called
   RUN TempReg0                   'RETURNback now....!!!!
   '
+
   '
   '
   '
@@ -354,109 +355,27 @@ ReturnBack:
 'XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 '
     '======================================================================
-PayloadTest:  'Payload test procedures and flight preparation utilities (priming, etc)
-  PayloadOptionsText:
-  DEBUG CR
-  DEBUG "IO1 On (pump1) = 1",CR
-  DEBUG "IO3 On (pump2) = 2",CR
-  DEBUG "IO5 On (grow lamp 1) = 3", CR
-  DEBUG "IO7 On (grow lamp 2) = 4",CR
-  DEBUG "IO0 On (Photo LEDs on) = 5",CR
-  DEBUG "Both Grow Lamps On = 6",CR
-  DEBUG "All IO Pins Off = 0",CR
-  DEBUG "Exit Payload Test = te",CR
-Ready:
-
-
-McMekReturn:
-PayloadOptions:
-      SERIN con_in,con_baud,con_tout,inputtimeout,[UserVar0] 'get terminal input, timeout at 100ms
-      '
-      'Heartbeat before Payload command to allow maximum time before a watchdog reset
-      '
-      DEBUG CR,"doing heartbeat",CR
-      TempReg0 = 1    'Return Index - HeartBeatReturn
-      TempReg1 = 1    'Destination Index: HeartBeat
-      TempReg3 = 7    'Destination Slot
-      GOTO GotoSlot
-HeartBeatReturn:
-    DEBUG CR, "HeatBeat Done. Payload test number? > ",CR
-
-    IF UserVar0 = "1" THEN PayloadTestP1              'Payload Board Circuit test 1
-    IF UserVar0 = "2" THEN PayloadTestP2              'Payload Board Circuit test 2
-    IF UserVar0 = "3" THEN PayloadTestP3               'Payload Board Circuit test 3
-    IF UserVar0 = "4" THEN PayloadTestP4               'Payload Board Circuit test 4
-    IF UserVar0 = "5" THEN PayloadTestP5               'Payload Board Circuit test 4
-    IF UserVar0 = "6" THEN PayloadTestP6               'Payload Board Circuit test 4
-    IF UserVar0 = "0" THEN PayloadTestOff             'Payload Board Circuit test 0
-    IF UserVar0 =$20 THEN PayloadOptionsText
-    IF UserVar0 =CR THEN PayloadOptionsText
-    IF UserVar0 = "e" THEN PayloadExit               'Exit Payload Board Test and Load
-
-    DEBUG CR,"I/O Error= ",(TempReg0),CR                 'incorrect key pushed
-    GOTO PayloadOptionstext:
-
-inputtimeout:
-    IF masterin = 1 THEN GOTO PayloadOptions 'nothing yet
-      '
-    DEBUG CR,"Do McMek Check",CR
-
-    TempReg0 = 2                   'Return Index to NanoLab Test after McMek service
-    TempReg1 = 0                   'Call Index to McMekCommand
-    TempReg3 = 6                   'Set to goto Slot 6
-    GOTO GotoSlot                  'go to McMek command interpreter ----
-
-PayloadTestP1:
-     DEBUG CR,"IO1 On",CR
-     I2COUT internI2C, PCF8574address, [%11111101]    'IO1 On
-     GOTO PayloadOptionsText
-PayloadTestP2:
-     DEBUG CR,"IO3 On",CR
-     I2COUT internI2C, PCF8574address, [%11100011]    'IO3 On
-     GOTO PayloadOptionsText
-PayloadTestP3:
-     DEBUG CR,"Grow Dome 1",CR
-     I2COUT internI2C, PCF8574address, [%11011111]    'IO5 On
-     'TOGGLE 14 'Toggle p14
-     GOTO PayloadOptionsText
-PayloadTestP4:
-     DEBUG CR,"Grow Dome 2",CR
-     I2COUT internI2C, PCF8574address, [%01111111]    'IO7 On
-     'TOGGLE 14 'Toggle p14
-     GOTO PayloadOptionsText
-PayloadTestP5:
-     DEBUG CR,"Photo LED On",CR
-     I2COUT internI2C, PCF8574address, [%11111111]    'IO7 On
-     'TOGGLE 14 'Toggle p14
-     GOTO PayloadOptionsText
- PayloadTestP6:
-     DEBUG CR,"Grow Domes On",CR
-     I2COUT internI2C, PCF8574address, [%01011111]    'IO7, IO5 On
-     'TOGGLE 14 'Toggle p14
-     GOTO PayloadOptionsText
-
-
-PayloadTestOff:
-     DEBUG CR,"All Outputs High (Off)",CR
-     HIGH 8 : HIGH 9 : HIGH 14
-     I2COUT InternI2c, PCF8574address,[$FF]     'IO[0-7] off
-     GOTO PayloadOptionsText
-
-PayloadExit:
-     TempReg0=0 'Call Index: SystemInitReturn
-     TempReg1=0 'Call Index: SystemInitReturn
-     TempReg3=0 'Call Slot: Main
-     GOTO GotoSlot
-
-
-
-  '
-  '======================================================================
-P1vector:
+ testtext:
         '
-        '
-  GOTO ReturnBack      'back to calling routine
-
+    DEBUG CR
+    DEBUG "Take photo download to terminal = k",CR
+    DEBUG "Take photo store in bank = I",CR
+    DEBUG "8 bit input = 8",CR        'display input value of pfc8574
+    DEBUG "8 bit output= 9",CR        'display input value of pfc8574
+    DEBUG "EERAM write = w",CR
+    DEBUG "EERAM read  = r",CR        '
+    DEBUG "EERAM dump  = d",CR
+    DEBUG "Restart     = b",CR
+    DEBUG "Output stat = h",CR
+    DEBUG "Slave time  = i",CR
+    DEBUG "Set time    = 0",CR
+    DEBUG "Output Text = R",CR
+    DEBUG "Set 640     = 6",CR
+    DEBUG "Set 320     = 3",CR
+    DEBUG "Set Quality = q",CR
+    DEBUG "Photo loop  = L",CR
+    DEBUG "Tempature on test bd = -",CR
+    DEBUG "Take Photo and Wait = p",CR
   '
     '======================================================================
 P2vector:
@@ -469,3 +388,51 @@ P3vector:
   '
   '
   GOTO ReturnBack      'back to calling routine
+  '
+'*************************************************
+'*  Testing routine to move data to download file location at $30000
+'
+SimDownload:
+    TempWord = UploadData          'set to point to data to move
+    STORE 3  'this bank
+    TempReg2 = EBank3              'point to bank 3 for down load file
+    FOR xcounter= 0 TO 255        'Set counter and pointer to download area  only 256 bytes
+    READ TempWord,TempReg0         'get byte to write
+    DEBUG "simFM=",DEC TempWord,"=>",DEC TempReg0,"xcount=",DEC xcounter,CR
+    I2COUT InternI2c, $A0 | TempReg2,xcounter.HIGHBYTE\xcounter.LOWBYTE, [TempReg0]
+    PAUSE 10                        'must wait for eeram write to finish
+    TempWord = TempWord+1
+    NEXT
+    GET MLabStatus,TempReg0        'get status byte
+    TempReg0 = TempReg0 | ExComplete 'set the upload file flag, file is ready to be used
+    PUT MLabStatus,TempReg0        'replace the status byte for further use
+    '
+    '
+    STORE DataStorage         'set to data storage bank
+    '
+    ' Reset TestNumber to 0, this is the pointer that will be used to get the data from the
+    '  downloaded file
+    '
+    WRITE TestNumber,Word $0000  'over ride operations, clear the pointer to do downloads from beginning
+    '
+    ' File has been downloaded to MicroLab, MLabStatus Byte updated with bit set
+    '
+    GOTO ReturnBack                'finished download
+
+'
+'  Data to simulate down loaded data
+'
+
+UploadData  DATA "AA",00,07,07,07,07,5 '1 test file format
+            DATA "AB",14,07,07,07,07,4 '2 test file format
+            DATA "AC",07,00,07,07,07,3 '3 test file format
+            DATA "AD",07,14,07,07,07,3 '4 test file format
+            DATA "AE",07,07,00,07,07,4 '5 test file format
+            DATA "AF",07,07,14,07,07,5 '6 test file format
+            DATA "AG",07,07,07,00,07,6 '7 test file format
+            DATA "AH",07,07,07,14,07,4 '8 test file format
+            DATA "AI",07,07,07,07,00,4 '9 test file format
+            DATA "AJ",07,07,07,07,14,4 '10 test file format
+            DATA "AK",00,14,07,07,07,4 '11 test file format
+            DATA "AL",00,00,07,07,07,4 '12 test file format
+            DATA 0,0,0,0,0,0,0,0       'Could be end

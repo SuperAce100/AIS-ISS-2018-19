@@ -1,4 +1,4 @@
-' {$STAMP BS2p, BIOS_S1_1603.bsp, BIOS_S2_1601.bsp, BIOS_S3_1601.bsp, BIOS_S4_1601.bsp, BIOS_S5_1601.bsp, BIOS_S6_1601.bsp, BIOS_S7_1601.bsp}
+' {$STAMP BS2p, BIOS_S1_AIS01.bsp, BIOS_S2_AIS01.bsp, BIOS_S3_AIS01.bsp, BIOS_S4_AIS01.bsp, BIOS_S5_AIS01.bsp, BIOS_S6_AIS01.bsp, BIOS_S7_AIS01.bsp}
 ' {$PBASIC 2.5}
 ' {$PORT COM4}
 '**************************************************
@@ -21,7 +21,7 @@ version   CON    1601   'Associatitive Event Table.
 '******************  Start of System Global lables *******************
 '     Conditional Assemblies
 '
-#DEFINE FlyConfig = 0              '1=Set to Flight Configuration, 0=Test Configuration
+#DEFINE FlyConfig = 1              '1=Set to Flight Configuration, 0=Test Configuration
 #DEFINE fastclock = 0              '0=Normal Time X1, 1=Medium Time ~X17 2=Fast Time ~X60
 #DEFINE testreset = 1              '1=test reset and reset count
 #DEFINE SaySlot   = 1              '1=Say Slot with vector
