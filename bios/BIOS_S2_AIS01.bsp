@@ -1,15 +1,15 @@
 ' {$STAMP BS2p}
 ' {$PBASIC 2.5}
-' {$PORT COM6}
+' {$PORT COM4}
 '**************************************************
 '
-'  Program Slot 1 =  Reset, calibration, and initialization procedures
+'  Program Slot 2 = Event Table and Event programs
 '
 'XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 'XXXXXXXX >>  Start Here to Copy Header entries  <<  XXXXXXXXXXXXXXXXXX
 'XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 '
-version   CON    1602
+version   CON    1601
 '
 ' 2012
 ' 1. added test for payload interface boards
@@ -19,7 +19,7 @@ version   CON    1602
 '     Conditional Assemblies
 '
 #DEFINE FlyConfig = 1              '1=Set to Flight Configuration, 0=Test Configuration
-#DEFINE fastclock = 2              '0=Normal Time X1, 1=Medium Time ~X17 2=Fast Time ~X60
+#DEFINE fastclock = 0              '0=Normal Time X1, 1=Medium Time ~X17 2=Fast Time ~X60
 #DEFINE testreset = 1              '1=test reset and reset count
 #DEFINE SaySlot   = 1              '1=Say Slot with vector
 #DEFINE Sayit = 1                  '1=Say what is happening
@@ -303,12 +303,12 @@ SysCPUcal    CON   $C002    'External E2RAM calibration locations
 '   Enter with TempReg1 containing the program index to run in this slot
 '*************************************************************************
   '
-  #IF SaySlot=1 #THEN
-  DEBUG ">S1-V",DEC TempReg1,CR
+  #IF SaySlot = 1 #THEN
+  DEBUG ">S2-V",DEC TempReg1,CR
   #ENDIF
-  BRANCH TempReg1,[PayloadTest,        '0 PayloadTest
-  HeartBeatReturn,                     '1 vector to this program
-  McMekReturn,                         '2 vector to this program
+  BRANCH TempReg1,[EventTable,         '0 Event Table
+  TakePhotoReturn,                     '1 vector to this program
+  P2vector,                            '2 vector to this program
   P3vector]                            '3 vector to this program
   '
 
@@ -321,7 +321,7 @@ SysCPUcal    CON   $C002    'External E2RAM calibration locations
 '   routine can be used to return to the originating program.
 '*************************************************************************
   '
-InSlot  CON    1               'Define this slot, each slot is numbered
+InSlot  CON    2               'Define this slot, each slot is numbered
   '
   '***********************************************************************
   '       To go to a slot and set a return
@@ -346,6 +346,7 @@ ReturnBack:
   GET VectorFromSlot,TempReg0    'fetch the program slot where the routine was called
   RUN TempReg0                   'RETURNback now....!!!!
   '
+
   '
   '
   '
@@ -354,99 +355,122 @@ ReturnBack:
 'XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 '
     '======================================================================
-PayloadTest:  'Payload test procedures and flight preparation utilities (priming, etc)
-  PayloadOptionsText:
-  DEBUG CR
-  DEBUG "IO1 On (pump1) = 1",CR
-  DEBUG "IO3 On (pump2) = 2",CR
-  DEBUG "IO5 On (grow lamp 1) = 3", CR
-  DEBUG "IO7 On (grow lamp 2) = 4",CR
-  DEBUG "IO0 On (Photo LEDs on) = 5",CR
-  DEBUG "Both Grow Lamps On = 6",CR
-  DEBUG "All IO Pins Off = 0",CR
-  DEBUG "Exit Payload Test = te",CR
-Ready:
+ EventTable:
+  TagCnt    CON 0     'hard coded Slot 0 program memory data addresses
+  DurMin    CON 1
+  DurHour   CON 2
+  DurDay    CON 3
+
+  STORE 0
+  READ DurMin,UserVar0
+  READ DurHour,UserVar1
+  READ DurDay,UserVar2
+  DEBUG CR,"Event table received (H D M):",DEC uservar2," ",DEC uservar1," ",DEC uservar0,CR,CR
+
+  'READ Missionmin,UserVar0   'Copy Mission Clock to RAM
+  'READ Missionhour,UserVar1
+  'READ Missionday,UserVar2
+  UserVar3 = 0 'Set EventByte to default "no event"
+
+ STORE 2      'Event Table is stored in this slot
+ 'check if minute = 0 or 15 or 30 or 45. then GOTO FoundEvent
+  IF (UserVar0//15)=0 THEN GOTO Event1
+  FOR TempReg0 = 0 TO 10
+    READ ETable+(TempReg0*5+0),TempReg1 : IF TempReg1 <> UserVar2 THEN GOTO NextRow  'Check Day
+    READ ETable+(TempReg0*5+1),TempReg1 : IF TempReg1 <> UserVar1 THEN GOTO NextRow 'Check Hour
+    READ ETable+(TempReg0*5+2),TempReg1 : IF TempReg1 <> UserVar0 THEN GOTO NextRow 'Check Min
+    READ ETable+(TempReg0*5+3),TempReg1 : IF TempReg1 <> $ff      THEN GOTO NextRow 'Execute if $ff
+    READ ETable+(TempReg0*5+4),UserVar3    'Write Event Number to UserVar3
+
+    'STORE 4 : READ Missionsec,UserVar0  :STORE 2  'Read latest seconds
+    'DEBUG CR,"missionSec = ",DEC uservar0,CR
+    WRITE ETable+TempReg0*5+3,UserVar0  : UserVar0=UserVar0+1  'Tag Event, increment tag count
+    STORE 0 : WRITE TagCnt,UserVar0                            'update TagCnt
+    GOTO FoundEvent
+NextRow:NEXT
+  STORE datastorage
+  GOTO ReturnBack
+
+FoundEvent:
+
+  'DEBUG CR,"found event: ",DEC UserVar3
+
+  STORE DataStorage ' return storage pointer to Slot 4
+  DEBUG CR, "Dump Etable FOR DEBUG "
+  STORE 2
+  FOR TempReg0 = 0 TO 10
+    DEBUG CR,"Event Table Row ",DEC TempReg0,":  "
+    READ ETable+(TempReg0*5)+0,TempReg1 : DEBUG DEC TempReg1,"  "
+    READ ETable+(TempReg0*5)+1,TempReg1 : DEBUG DEC TempReg1,"  "
+    READ ETable+(TempReg0*5)+2,TempReg1 : DEBUG DEC TempReg1,"  "
+    READ ETable+(TempReg0*5)+3,TempReg1 : DEBUG HEX TempReg1,"  "
+    READ ETable+(TempReg0*5)+4,TempReg1 : DEBUG DEC TempReg1,"  "
+  NEXT
+  DEBUG CR,"End of Table",CR
+
+  STORE DataStorage
+  BRANCH UserVar3,[Event0,    'Event 0 (do nothing)
+  Event1,                     'Event 1 (
+  Event2,                     'Event 2 
+  Event3]                     'Event 3
+
+  UserVar3 = 0                 'Error
+  DEBUG CR,"Event Byte is out of range",CR
+  GOTO ReturnBack              'back to calling routine
+
+Event0: DEBUG CR,"REB0",CR
+        tempReg0 = 4 'Destination Index (EventTableReturn)
+        RUN 0        'Destination Slot
+
+Event1: DEBUG CR,"REB1: TakePhoto",CR
+         'I2COUT InternI2c, PCF8574address,[%11011111]    'Turns on the LED's
+         '
+         '   Take a High Resoluation Photo of the Chamber
+         'TTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTT
+         PUT    CameraRes,Camera640        'Template default
+         PUT    CameraQua,CameraBest     'set to Normal
+
+         PUT VectorFromSlot,2 'Return Slot
+         PUT VectorFromNum,1  'Return Index
+         TempReg1 = 1    'Destination Index
+         TempReg3 = 6    'Destination Slot
+         RUN 6           'Execute a slot goto proceedure now doit
+TakePhotoReturn:
+         'TTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTT
+         '
+         'I2COUT InternI2c, PCF8574address,[$FF]     'Turns off the LED's
+         ' Values in return back are lost when jumping to Slot 6
+         tempReg0 = 4 'Destination Index (EventTableReturn)
+         RUN 0        'Destination Slot
+
+' Event 2 is run pump for 35 seconds 
+Event2: DEBUG CR,"REB2: 35s Pump Pulse" ,CR 
+        I2COUT InternI2c, PCF8574address,[%01111111]     'IO7 high, all others off
+        PAUSE 35000 'Pause 35 seconds
+        I2COUT InternI2c, PCF8574address,[$FF]     'All IO pins off
+        'Don't touch the next two statements
+        tempReg0 = 4 'Destination Index (EventTableReturn)
+        RUN 0        'Destination Slot
+
+' Event 3 is run pump for 15 seconds 
+Event3: DEBUG CR,"REB2: 15s Pump Pulse" ,CR 
+        I2COUT InternI2c, PCF8574address,[%01111111]     'IO7 high, all others off
+        PAUSE 15000 'Pause 15 seconds
+        I2COUT InternI2c, PCF8574address,[$FF]     'All IO pins off
+        'Don't touch the next two statements
+        tempReg0 = 4 'Destination Index (EventTableReturn)
+        RUN 0        'Destination Slot
+
+DmpOut: STORE DataStorage
+        tempReg0 = 4 'Destination Index (EventTableReturn)
+        RUN 0        'Destination Slot
 
 
-McMekReturn:
-PayloadOptions:
-      SERIN con_in,con_baud,con_tout,inputtimeout,[UserVar0] 'get terminal input, timeout at 100ms
-      '
-      'Heartbeat before Payload command to allow maximum time before a watchdog reset
-      '
-      DEBUG CR,"doing heartbeat",CR
-      TempReg0 = 1    'Return Index - HeartBeatReturn
-      TempReg1 = 1    'Destination Index: HeartBeat
-      TempReg3 = 7    'Destination Slot
-      GOTO GotoSlot
-HeartBeatReturn:
-    DEBUG CR, "HeatBeat Done. Payload test number? > ",CR
-
-    IF UserVar0 = "1" THEN PayloadTestP1              'Payload Board Circuit test 1
-    IF UserVar0 = "2" THEN PayloadTestP2              'Payload Board Circuit test 2
-    IF UserVar0 = "3" THEN PayloadTestP3               'Payload Board Circuit test 3
-    IF UserVar0 = "4" THEN PayloadTestP4               'Payload Board Circuit test 4
-    IF UserVar0 = "5" THEN PayloadTestP5               'Payload Board Circuit test 4
-    IF UserVar0 = "6" THEN PayloadTestP6               'Payload Board Circuit test 4
-    IF UserVar0 = "0" THEN PayloadTestOff             'Payload Board Circuit test 0
-    IF UserVar0 =$20 THEN PayloadOptionsText
-    IF UserVar0 =CR THEN PayloadOptionsText
-    IF UserVar0 = "e" THEN PayloadExit               'Exit Payload Board Test and Load
-
-    DEBUG CR,"I/O Error= ",(TempReg0),CR                 'incorrect key pushed
-    GOTO PayloadOptionstext:
-
-inputtimeout:
-    IF masterin = 1 THEN GOTO PayloadOptions 'nothing yet
-      '
-    DEBUG CR,"Do McMek Check",CR
-
-    TempReg0 = 2                   'Return Index to NanoLab Test after McMek service
-    TempReg1 = 0                   'Call Index to McMekCommand
-    TempReg3 = 6                   'Set to goto Slot 6
-    GOTO GotoSlot                  'go to McMek command interpreter ----
-
-PayloadTestP1:
-     DEBUG CR,"IO1 On",CR
-     I2COUT internI2C, PCF8574address, [%11111101]    'IO1 On
-     GOTO PayloadOptionsText
-PayloadTestP2:
-     DEBUG CR,"IO3 On",CR
-     I2COUT internI2C, PCF8574address, [%11100011]    'IO3 On
-     GOTO PayloadOptionsText
-PayloadTestP3:
-     DEBUG CR,"Grow Dome 1",CR
-     I2COUT internI2C, PCF8574address, [%11011111]    'IO5 On
-     'TOGGLE 14 'Toggle p14
-     GOTO PayloadOptionsText
-PayloadTestP4:
-     DEBUG CR,"Grow Dome 2",CR
-     I2COUT internI2C, PCF8574address, [%01111111]    'IO7 On
-     'TOGGLE 14 'Toggle p14
-     GOTO PayloadOptionsText
-PayloadTestP5:
-     DEBUG CR,"Photo LED On",CR
-     I2COUT internI2C, PCF8574address, [%11111111]    'IO7 On
-     'TOGGLE 14 'Toggle p14
-     GOTO PayloadOptionsText
- PayloadTestP6:
-     DEBUG CR,"Grow Domes On",CR
-     I2COUT internI2C, PCF8574address, [%01011111]    'IO7, IO5 On
-     'TOGGLE 14 'Toggle p14
-     GOTO PayloadOptionsText
 
 
-PayloadTestOff:
-     DEBUG CR,"All Outputs High (Off)",CR
-     HIGH 8 : HIGH 9 : HIGH 14
-     I2COUT InternI2c, PCF8574address,[$FF]     'IO[0-7] off
-     GOTO PayloadOptionsText
 
-PayloadExit:
-     TempReg0=0 'Call Index: SystemInitReturn
-     TempReg1=0 'Call Index: SystemInitReturn
-     TempReg3=0 'Call Slot: Main
-     GOTO GotoSlot
+
+
 
 
 
@@ -469,3 +493,17 @@ P3vector:
   '
   '
   GOTO ReturnBack      'back to calling routine
+
+
+
+         '    Day  Hour  Min   Tag  EventByte
+ ETable DATA  01,  04,   11,   $FF,     03   'Row 0   (DAY 1) Initialize pump with 15 second water pulse
+        DATA  01,  04,   12,   $FF,     02   'Row 1   (DAY 1) First 35-second water pulse 
+        DATA  01,  04,   14,   $FF,     02   'Row 2   (DAY 1) Second One 35-second water pulse (after 2 minutes to let the water absorb)
+        DATA  00,  00,   00,   $FF,     00   'Row 3   (DAY 0) 
+        DATA  00,  00,   00,   $FF,     00   'Row 4   (DAY 0) 
+        DATA  03,  04,   12,   $FF,     02   'Row 5   (DAY 3) One 35-second water pulse
+        DATA  00,  00,   00,   $FF,     00   'Row 6   (DAY 0) 
+        DATA  00,  00,   00,   $FF,     00   'Row 7   (DAY 0) 
+        DATA  05,  04,   12,   $FF,     02   'Row 8   (DAY 5) One 35-second water pulse
+        DATA  00,  00,   00,   $FF,     00   'Row 9   (DAY 0) 

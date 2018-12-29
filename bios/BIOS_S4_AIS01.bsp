@@ -19,7 +19,7 @@ version   CON    1601
 '     Conditional Assemblies
 '
 #DEFINE FlyConfig = 1              '1=Set to Flight Configuration, 0=Test Configuration
-#DEFINE fastclock = 2              '0=Normal Time X1, 1=Medium Time ~X17 2=Fast Time ~X60
+#DEFINE fastclock = 0              '0=Normal Time X1, 1=Medium Time ~X17 2=Fast Time ~X60
 #DEFINE testreset = 1              '1=test reset and reset count
 #DEFINE SaySlot   = 1              '1=Say Slot with vector
 #DEFINE Sayit = 1                  '1=Say what is happening
@@ -768,7 +768,7 @@ BCD2ASCII:
 ' For text
 '**************
 '
-ID       DATA "BIOS Templet Program 2013-2014 Ver 131",CR     'Name of School/Project
+ID       DATA "AIS-ISS Project 2018/19 VER 1 : Slime Mold Maze ",CR     'Name of School/Project
          DATA "Data Download Number "
 LastPN   DATA "ML00000",CR                         'photo file name
 ADate    DATA "00/00/00 at "                       'RTC date

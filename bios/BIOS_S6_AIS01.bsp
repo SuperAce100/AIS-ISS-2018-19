@@ -21,7 +21,7 @@ version   CON    1601
 '     Conditional Assemblies
 '
 #DEFINE FlyConfig = 1              '1=Set to Flight Configuration, 0=Test Configuration
-#DEFINE fastclock = 2              '0=Normal Time X1, 1=Medium Time ~X17 2=Fast Time ~X60
+#DEFINE fastclock = 0              '0=Normal Time X1, 1=Medium Time ~X17 2=Fast Time ~X60
 #DEFINE testreset = 1              '1=test reset and reset count
 #DEFINE SaySlot   = 1              '1=Say Slot with vector
 #DEFINE Sayit = 1                  '1=Say what is happening
@@ -480,6 +480,7 @@ TakePhoto:
 TakePhoto1:
   '
   LOW camerapower               'turn camera power off if on in error recovery
+  I2COUT InternI2c, PCF8574address,[%11011111]    'Turns on the LED's
   PAUSE 500                     '1/2 sec
    '
   HIGH cameraCS               'set camera chip select to high
@@ -576,6 +577,7 @@ SelectQuality:
     'Set the quality properly
     '
 GetPicture:
+    
     FOR tempreg1 = 0 TO 150                                    'again 150 times
     LOW cameraCS                                               'enable camera
     FOR xcounter = 0 TO 7                                      'set to send 8 bytes
@@ -591,8 +593,10 @@ GetPicture:
     GOTO cameraerror
     '
     '
+
 readydownload:
     LOW cameraCS                                               'endable camera
+    I2COUT InternI2c, PCF8574address,[$ff]    'Turns off the LED's
     FOR xcounter = 0 TO 7                                      'set for 8 bytes
     LOOKUP xcounter,[$ff,$ff,$ff,$04,$05,$00,$00,$00],sdata    'Download command
     GOSUB manualbytespi                                        'send it and read input
@@ -601,6 +605,7 @@ readydownload:
     NEXT                                                       'get next byte
     HIGH cameraCS                                              'disable camera select
     TempWord = text(5) + (text(6)*256) + (text(7)*256*256)     'Array has size of photo
+    
     '
     'Photo length is in TempWord and camera is set to download the photo
     'Now what to do with the data
@@ -662,6 +667,7 @@ OK:
     '
 cameraerror:
     DEBUG "CE",HEX2 tempreg0,CR
+    I2COUT InternI2c, PCF8574address,[$ff]    'Turns off the LED's
     SEROUT masterout,Baud9600T,Pace,[CR,"cam err",CR,$1B] 'send "ascii esc" termination charator
     GOTO ReturnBack
     '

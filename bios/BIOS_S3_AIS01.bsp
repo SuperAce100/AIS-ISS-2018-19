@@ -3,7 +3,7 @@
 ' {$PORT COM4}
 '**************************************************
 '
-'  Program Slot 2 = Event Table and Event programs
+'  Program Slot 3 = program
 '
 'XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 'XXXXXXXX >>  Start Here to Copy Header entries  <<  XXXXXXXXXXXXXXXXXX
@@ -303,13 +303,13 @@ SysCPUcal    CON   $C002    'External E2RAM calibration locations
 '   Enter with TempReg1 containing the program index to run in this slot
 '*************************************************************************
   '
-  #IF SaySlot = 1 #THEN
-  DEBUG ">S2-V",DEC TempReg1,CR
+  #IF SaySlot =1 #THEN
+  DEBUG ">S3-V",DEC TempReg1,CR
   #ENDIF
-  BRANCH TempReg1,[EventTable,         '0 Event Table
-  TakePhotoReturn,                     '1 vector to this program
-  P2vector,                            '2 vector to this program
-  P3vector]                            '3 vector to this program
+  BRANCH TempReg1,[testtext,           '0 vector flight condition setup override
+ ReturnBack,                         '1 vector to run chamber
+ ReturnBack,                             '2 vector to init the dac to balanced
+  SimDownload]                         '3 vector to this program
   '
 
 '*************************************************************************
@@ -321,7 +321,7 @@ SysCPUcal    CON   $C002    'External E2RAM calibration locations
 '   routine can be used to return to the originating program.
 '*************************************************************************
   '
-InSlot  CON    2               'Define this slot, each slot is numbered
+InSlot  CON    3               'Define this slot, each slot is numbered
   '
   '***********************************************************************
   '       To go to a slot and set a return
@@ -355,151 +355,27 @@ ReturnBack:
 'XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 '
     '======================================================================
- EventTable:
-  TagCnt    CON 0     'hard coded Slot 0 program memory data addresses
-  DurMin    CON 1
-  DurHour   CON 2
-  DurDay    CON 3
-
-  STORE 0
-  READ DurMin,UserVar0
-  READ DurHour,UserVar1
-  READ DurDay,UserVar2
-  DEBUG CR,"Event table received (H D M):",DEC uservar2," ",DEC uservar1," ",DEC uservar0,CR,CR
-
-  'READ Missionmin,UserVar0   'Copy Mission Clock to RAM
-  'READ Missionhour,UserVar1
-  'READ Missionday,UserVar2
-  UserVar3 = 0 'Set EventByte to default "no event"
-
- STORE 2      'Event Table is stored in this slot
-  FOR TempReg0 = 0 TO 10
-    READ ETable+(TempReg0*5+0),TempReg1 : IF TempReg1 <> UserVar2 THEN GOTO NextRow  'Check Day
-    READ ETable+(TempReg0*5+1),TempReg1 : IF TempReg1 <> UserVar1 THEN GOTO NextRow 'Check Hour
-    READ ETable+(TempReg0*5+2),TempReg1 : IF TempReg1 <> UserVar0 THEN GOTO NextRow 'Check Min
-    READ ETable+(TempReg0*5+3),TempReg1 : IF TempReg1 <> $ff      THEN GOTO NextRow 'Execute if $ff
-    READ ETable+(TempReg0*5+4),UserVar3    'Write Event Number to UserVar3
-
-    'STORE 4 : READ Missionsec,UserVar0  :STORE 2  'Read latest seconds
-    'DEBUG CR,"missionSec = ",DEC uservar0,CR
-    WRITE ETable+TempReg0*5+3,UserVar0  : UserVar0=UserVar0+1  'Tag Event, increment tag count
-    STORE 0 : WRITE TagCnt,UserVar0                            'update TagCnt
-    GOTO FoundEvent
-NextRow:NEXT
-  STORE datastorage
-  GOTO ReturnBack
-
-FoundEvent:
-
-  'DEBUG CR,"found event: ",DEC UserVar3
-
-  STORE DataStorage ' return storage pointer to Slot 4
-  DEBUG CR, "Dump Etable FOR DEBUG "
-  STORE 2
-  FOR TempReg0 = 0 TO 10
-    DEBUG CR,"Event Table Row ",DEC TempReg0,":  "
-    READ ETable+(TempReg0*5)+0,TempReg1 : DEBUG DEC TempReg1,"  "
-    READ ETable+(TempReg0*5)+1,TempReg1 : DEBUG DEC TempReg1,"  "
-    READ ETable+(TempReg0*5)+2,TempReg1 : DEBUG DEC TempReg1,"  "
-    READ ETable+(TempReg0*5)+3,TempReg1 : DEBUG HEX TempReg1,"  "
-    READ ETable+(TempReg0*5)+4,TempReg1 : DEBUG DEC TempReg1,"  "
-  NEXT
-  DEBUG CR,"End of Table",CR
-
-  STORE DataStorage
-  BRANCH UserVar3,[Event0,    'Event 0 (do nothing)
-  Event1,                     'Event 1 (
-  event2,                     'Event 2 (
-  event3,                     'Event 3 (
-  Event4]                     'Event 4 (
-
-  UserVar3 = 0                 'Error
-  DEBUG CR,"Event Byte is out of range",CR
-  GOTO ReturnBack              'back to calling routine
-
-Event0: DEBUG CR,"REB0",CR
-        tempReg0 = 4 'Destination Index (EventTableReturn)
-        RUN 0        'Destination Slot
-
-Event1: DEBUG CR,"REB1: TakePhoto",CR
-         HIGH 14    'Turns on the LED's
-         '
-         '   Take a High Resoluation Photo of the Chamber
-         'TTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTT
-         PUT    CameraRes,Camera640        'Template default
-         PUT    CameraQua,CameraNormal     'set to Normal
-
-         PUT VectorFromSlot,2 'Return Slot
-         PUT VectorFromNum,1  'Return Index
-         TempReg1 = 1    'Destination Index
-         TempReg3 = 6    'Destination Slot
-         RUN 6           'Execute a slot goto proceedure now doit
-TakePhotoReturn:
-         'TTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTT
-         '
-         LOW 14     'Turns off the LED's
-         ' Values in return back are lost when jumping to Slot 6
-         tempReg0 = 4 'Destination Index (EventTableReturn)
-         RUN 0        'Destination Slot
-
-Event2: DEBUG CR,"REB2: 5s Pump Pulse" ,CR
-        I2COUT InternI2c, PCF8574address,[$EF]     'IO5 high, all others off
-        PAUSE 5000 'Pause 5 seconds
-        I2COUT InternI2c, PCF8574address,[$FF]     'All IO pins off
-        'Don't touch the next two statements
-        tempReg0 = 4 'Destination Index (EventTableReturn)
-        RUN 0        'Destination Slot
-
-Event3: DEBUG CR,"REB3: empty"  ,CR
-        I2COUT internI2C, PCF8574address, [%01011111]    'IO7, IO5 On
-        tempReg0 = 4 'Destination Index (EventTableReturn)
-        RUN 0        'Destination Slot
-
-Event4: DEBUG CR,"REB4:Replay" ,CR
-        STORE 2
-        READ PumpIter,TempReg0
-        TempReg0 = TempReg0-1            'decrement pump iteration count
-        DEBUG "Pump Iteration ",DEC2 TempReg0,CR,CR
-        WRITE PumpIter,TempReg0          'store count in Pump Iterator
-
-        IF TempReg0 < 1 THEN
-           DEBUG "Pump Iter value = ", DEC2 tempreg0," exiting replay",CR,CR
-           WRITE PumpIter,36 'restore value
-           GOTO DmpOut 'timed out
-        ENDIF
-
-        STORE 0
-        WRITE DurDay,1 : WRITE DurHour,0 : WRITE DurMin,0 'Reset Event Table State
-        STORE 2
-          FOR TempReg0 = 5 TO 6
-          WRITE ETable+(TempReg0*5)+3,$FF 'reset tag fields to allow a repeat cycle
-        NEXT
-DmpOut: STORE DataStorage
-        tempReg0 = 4 'Destination Index (EventTableReturn)
-        RUN 0        'Destination Slot
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-  '
-  '======================================================================
-P1vector:
+ testtext:
         '
-        '
-  GOTO ReturnBack      'back to calling routine
-
+    DEBUG CR
+    DEBUG "Take photo download to terminal = k",CR
+    DEBUG "Take photo store in bank = I",CR
+    DEBUG "8 bit input = 8",CR        'display input value of pfc8574
+    DEBUG "8 bit output= 9",CR        'display input value of pfc8574
+    DEBUG "EERAM write = w",CR
+    DEBUG "EERAM read  = r",CR        '
+    DEBUG "EERAM dump  = d",CR
+    DEBUG "Restart     = b",CR
+    DEBUG "Output stat = h",CR
+    DEBUG "Slave time  = i",CR
+    DEBUG "Set time    = 0",CR
+    DEBUG "Output Text = R",CR
+    DEBUG "Set 640     = 6",CR
+    DEBUG "Set 320     = 3",CR
+    DEBUG "Set Quality = q",CR
+    DEBUG "Photo loop  = L",CR
+    DEBUG "Tempature on test bd = -",CR
+    DEBUG "Take Photo and Wait = p",CR
   '
     '======================================================================
 P2vector:
@@ -512,50 +388,51 @@ P3vector:
   '
   '
   GOTO ReturnBack      'back to calling routine
+  '
+'*************************************************
+'*  Testing routine to move data to download file location at $30000
+'
+SimDownload:
+    TempWord = UploadData          'set to point to data to move
+    STORE 3  'this bank
+    TempReg2 = EBank3              'point to bank 3 for down load file
+    FOR xcounter= 0 TO 255        'Set counter and pointer to download area  only 256 bytes
+    READ TempWord,TempReg0         'get byte to write
+    DEBUG "simFM=",DEC TempWord,"=>",DEC TempReg0,"xcount=",DEC xcounter,CR
+    I2COUT InternI2c, $A0 | TempReg2,xcounter.HIGHBYTE\xcounter.LOWBYTE, [TempReg0]
+    PAUSE 10                        'must wait for eeram write to finish
+    TempWord = TempWord+1
+    NEXT
+    GET MLabStatus,TempReg0        'get status byte
+    TempReg0 = TempReg0 | ExComplete 'set the upload file flag, file is ready to be used
+    PUT MLabStatus,TempReg0        'replace the status byte for further use
+    '
+    '
+    STORE DataStorage         'set to data storage bank
+    '
+    ' Reset TestNumber to 0, this is the pointer that will be used to get the data from the
+    '  downloaded file
+    '
+    WRITE TestNumber,Word $0000  'over ride operations, clear the pointer to do downloads from beginning
+    '
+    ' File has been downloaded to MicroLab, MLabStatus Byte updated with bit set
+    '
+    GOTO ReturnBack                'finished download
 
+'
+'  Data to simulate down loaded data
+'
 
-
-         '    Day  Hour  Min   Tag  EventByte
- ETable DATA  00,  00,   00,   $FF,     00   'Row 0
-        DATA  00,  00,   01,   $FF,     03   'Row 1
-        DATA  00,  00,   00,   $FF,     00   'Row 2
-        DATA  00,  00,   00,   $FF,     00   'Row 3
-        DATA  01,  04,   59,   $FF,     00   'Row 4   Take Inspection Photo
-        DATA  01,  05,   00,   $FF,     00   'Row 5   5s Pump Pulse
-        DATA  01,  05,   01,   $FF,     00   'Row 6   Take photo to record Event Table State
-        DATA  01,  05,   02,   $FF,     00   'Row 7   Replay Take Replay Exit Photo
-        DATA  01,  05,   03,   $FF,     00   'Row 8   Take another photo to record Event Table state
-        DATA  05,  00,   00,   $FF,     00   'Row 9
-        DATA  06,  00,   00,   $FF,     00   'Row 10
-        DATA  07,  00,   00,   $FF,     00   'Row 11
-        DATA  08,  00,   00,   $FF,     00   'Row 12
-        DATA  09,  00,   00,   $FF,     00   'Row 13
-        DATA  10,  00,   00,   $FF,     00   'Row 14
-        DATA  11,  00,   00,   $FF,     00   'Row 15
-        DATA  12,  00,   00,   $FF,     00   'Row 16
-        DATA  13,  00,   00,   $FF,     00   'Row 17
-        DATA  14,  00,   00,   $FF,     00   'Row 18
-        DATA  15,  00,   00,   $FF,     00   'Row 19
-        DATA  16,  00,   00,   $FF,     00   'Row 20
-        DATA  17,  00,   00,   $FF,     00   'Row 21
-        DATA  18,  00,   00,   $FF,     00   'Row 22
-        DATA  19,  00,   00,   $FF,     00   'Row 23
-        DATA  20,  00,   00,   $FF,     00   'Row 24
-        DATA  21,  00,   00,   $FF,     00   'Row 25
-        DATA  22,  00,   00,   $FF,     00   'Row 26
-        DATA  23,  00,   00,   $FF,     00   'Row 27
-        DATA  24,  00,   00,   $FF,     00   'Row 28
-        DATA  25,  00,   00,   $FF,     00   'Row 29
-        DATA  26,  00,   00,   $FF,     00   'Row 30
-        DATA  27,  00,   00,   $FF,     00   'Row 31
-        DATA  28,  00,   00,   $FF,     00   'Row 32
-        DATA  29,  00,   00,   $FF,     00   'Row 33
-        DATA  30,  00,   00,   $FF,     00   'Row 34
-        DATA  31,  00,   00,   $FF,     00   'Row 35
-        DATA  32,  00,   00,   $FF,     00   'Row 36
-        DATA  33,  00,   00,   $FF,     00   'Row 37
-        DATA  34,  00,   00,   $FF,     00   'Row 38
-        DATA  35,  00,   00,   $FF,     00   'Row 39
-        DATA  36,  00,   00,   $FF,     00   'Row 40
-
-PumpIter DATA   36  '3 minute
+UploadData  DATA "AA",00,07,07,07,07,5 '1 test file format
+            DATA "AB",14,07,07,07,07,4 '2 test file format
+            DATA "AC",07,00,07,07,07,3 '3 test file format
+            DATA "AD",07,14,07,07,07,3 '4 test file format
+            DATA "AE",07,07,00,07,07,4 '5 test file format
+            DATA "AF",07,07,14,07,07,5 '6 test file format
+            DATA "AG",07,07,07,00,07,6 '7 test file format
+            DATA "AH",07,07,07,14,07,4 '8 test file format
+            DATA "AI",07,07,07,07,00,4 '9 test file format
+            DATA "AJ",07,07,07,07,14,4 '10 test file format
+            DATA "AK",00,14,07,07,07,4 '11 test file format
+            DATA "AL",00,00,07,07,07,4 '12 test file format
+            DATA 0,0,0,0,0,0,0,0       'Could be end
