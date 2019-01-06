@@ -754,7 +754,7 @@ BCD2ASCII:
       DATA $00           'Cstatus          state and status of testing chamber
       DATA Word $0000    'TestNumber         location in EEROM
       DATA $00           'ResetNumber        Store number of reset sense last program load
-      DATA "WI"          'IDcodefile         2 alpha ID of MicroLab "ML,FF,XX,??"
+      DATA "AI"          'IDcodefile         2 alpha ID of MicroLab "ML,FF,XX,??"
       DATA "00000"       'LastPhoto          MSD  $30,$30,$30,$30,$30  lsd
       DATA $00           'LastBKupload       last bank uploaded
       DATA $00           'NextBktoLoad       next bank to load
