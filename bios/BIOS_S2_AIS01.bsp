@@ -443,19 +443,19 @@ TakePhotoReturn:
          tempReg0 = 4 'Destination Index (EventTableReturn)
          RUN 0        'Destination Slot
 
-' Event 2 is run pump for 35 seconds 
-Event2: DEBUG CR,"REB2: 35s Pump Pulse" ,CR 
+' Event 2 is run pump for 30 seconds 
+Event2: DEBUG CR,"REB2: 30s Pump Pulse" ,CR 
         I2COUT InternI2c, PCF8574address,[%01111111]     'IO7 high, all others off
-        PAUSE 35000 'Pause 35 seconds
+        PAUSE 30000 'Pause 30 seconds
         I2COUT InternI2c, PCF8574address,[$FF]     'All IO pins off
         'Don't touch the next two statements
         tempReg0 = 4 'Destination Index (EventTableReturn)
         RUN 0        'Destination Slot
 
-' Event 3 is run pump for 15 seconds 
-Event3: DEBUG CR,"REB2: 15s Pump Pulse" ,CR 
+' Event 3 is run pump for 20 seconds 
+Event3: DEBUG CR,"REB2: 20s Pump Pulse" ,CR 
         I2COUT InternI2c, PCF8574address,[%01111111]     'IO7 high, all others off
-        PAUSE 15000 'Pause 15 seconds
+        PAUSE 20000 'Pause 20 seconds
         I2COUT InternI2c, PCF8574address,[$FF]     'All IO pins off
         'Don't touch the next two statements
         tempReg0 = 4 'Destination Index (EventTableReturn)
@@ -507,3 +507,39 @@ P3vector:
         DATA  00,  00,   00,   $FF,     00   'Row 7   (DAY 0) 
         DATA  05,  04,   12,   $FF,     02   'Row 8   (DAY 5) One 35-second water pulse
         DATA  00,  00,   00,   $FF,     00   'Row 9   (DAY 0) 
+
+'Experiment 1 (commented out) This experiment has a water pulse between every 24 hours 
+        '    Day  Hour  Min   Tag  EventByte
+ 'ETable DATA  00,  00,   11,   $FF,     02   'Row 0   (DAY 1) Initialize pump with 30 second water pulse
+        'DATA  00,  00,   12,   $FF,     03   'Row 1   (DAY 1) First 20-second water pulse 
+        'DATA  01,  00,   12,   $FF,     03   'Row 2   (DAY 2) Second 20-second water pulse
+        'DATA  02,  00,   12,   $FF,     03   'Row 3   (DAY 3) Third 20-second water pulse 
+        'DATA  03,  00,   12,   $FF,     03   'Row 1   (DAY 4) Fourth 20-second water pulse 
+        'DATA  04,  00,   12,   $FF,     03   'Row 2   (Day 5) Fifth 20-second water pulse 
+
+  'Experiment 2 (commented out)
+          '    Day  Hour  Min   Tag  EventByte
+'ETable DATA   00,  00,   0,  $FF,     02   'Row 0   (DAY 1) Initialize pump with 30 second water pulse
+        'DATA  00,  00,   1,  $FF,     03   'Row 1   (DAY 1) First 20-second water pulse 
+        'DATA  00,  08,   0,  $FF,     03   'Row 2   (DAY 1) Second 20-second water pulse
+        'DATA  00,  16,   0,  $FF,     03   'Row 3   (DAY 1) Third 20-second water pulse 
+        'DATA  01,  00,   0,  $FF,     03   'Row 4   (DAY 2) Fourth 20-second water pulse 
+        'DATA  01,  08,   0,  $FF,     03   'Row 5   (DAY 2) Fifth 20-second water pulse
+        'DATA  01,  16,   0,  $FF,     03   'Row 6   (DAY 2) Sixth 20-second water pulse 
+        'DATA  02,  00,   0,  $FF,     03   'Row 7   (DAY 3) Seventh 20-second water pulse 
+        'DATA  02,  08,   0,  $FF,     03   'Row 8   (DAY 3) Eight 20-second water pulse
+        'DATA  02,  16,   0,  $FF,     03   'Row 9   (DAY 3) Ninth 20-second water pulse 
+        'DATA  03,  00,   0,  $FF,     03   'Row 10  (DAY 4) Tenth 20-second water pulse 
+        'DATA  03,  08,   0   $FF,     03   'Row 11  (DAY 4) Eleventh 20-second water pulse
+        'DATA  03,  16,   0,  $FF,     03   'Row 12  (DAY 4) Twelvth 20-second water pulse 
+        'DATA  04,  00,   0,  $FF,     03   'Row 13  (Day 5) Thirteenth 20-second water pulse 
+
+        ' Experiment 1:
+        ' Once for 30 seconds, again for 30 seconds (1 minute apart)
+        ' Afterwards, run for 30 seconds every 24 hours 
+       
+
+        ' Experiment 2:
+        ' Once for 30 seconds, again for 20 seconds (1 minute apart)
+        ' Afterwards, run for 20 seconds every 8 hours 
+  
