@@ -575,7 +575,7 @@ FlightStart:
 '
     #IF fastclock = 0     #THEN
 MoprClk0Val CON 635 '1st mission operations counter, times to chk masterin base, 1 sec calibration
-MoprClk1Val CON 30   'Heartbeat every 30 sec, seems ok
+MoprClk1Val CON 60   'Heartbeat every 60 sec, seems ok
 MoprClk2Val CON 120  '120 = once per hour count, 120 30sec counts, 240 = every 2 hours
     #ENDIF
     #IF fastclock = 1 #THEN
@@ -588,7 +588,7 @@ MoprClk0Val CON 100 ' "720"1st mission operations counter, times to chk masterin
 MoprClk1Val CON 60  ' Heartbeat every 30 sec, seems ok
 MoprClk2Val CON 2 '10 mintime to do chamber operations
     #ENDIF
-MoprMinVal  CON 2  'Count 2 HeartBeats - used for counting minutes
+MoprMinVal  CON 1  'Count 1 HeartBeat - used for counting minutes
 '
 '
 Flight:
