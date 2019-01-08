@@ -373,8 +373,8 @@ ReturnBack:
   UserVar3 = 0 'Set EventByte to default "no event"
 
  STORE 2      'Event Table is stored in this slot
- 'check if minute = 0 or 15 or 30 or 45. then GOTO FoundEvent
-  IF (UserVar0//15)=0 THEN GOTO Event1
+ 'check if minute = 3 or 18 or 33 or 48. then GOTO Event1
+  IF (UserVar0//15)=3 THEN GOTO Event1
   FOR TempReg0 = 0 TO 10
     READ ETable+(TempReg0*5+0),TempReg1 : IF TempReg1 <> UserVar2 THEN GOTO NextRow  'Check Day
     READ ETable+(TempReg0*5+1),TempReg1 : IF TempReg1 <> UserVar1 THEN GOTO NextRow 'Check Hour
@@ -497,49 +497,36 @@ P3vector:
 
 
          '    Day  Hour  Min   Tag  EventByte
- ETable DATA  01,  04,   11,   $FF,     03   'Row 0   (DAY 1) Initialize pump with 15 second water pulse
-        DATA  01,  04,   12,   $FF,     02   'Row 1   (DAY 1) First 35-second water pulse 
-        DATA  01,  04,   14,   $FF,     02   'Row 2   (DAY 1) Second One 35-second water pulse (after 2 minutes to let the water absorb)
-        DATA  00,  00,   00,   $FF,     00   'Row 3   (DAY 0) 
-        DATA  00,  00,   00,   $FF,     00   'Row 4   (DAY 0) 
-        DATA  03,  04,   12,   $FF,     02   'Row 5   (DAY 3) One 35-second water pulse
-        DATA  00,  00,   00,   $FF,     00   'Row 6   (DAY 0) 
-        DATA  00,  00,   00,   $FF,     00   'Row 7   (DAY 0) 
-        DATA  05,  04,   12,   $FF,     02   'Row 8   (DAY 5) One 35-second water pulse
-        DATA  00,  00,   00,   $FF,     00   'Row 9   (DAY 0) 
+  ETable DATA  01,  12,   11,   $FF,     02   'Row 0   (DAY 1) Initialize pump with 30 second water pulse
+         DATA  01,  12,   12,   $FF,     03   'Row 1   (DAY 1) First 20-second water pulse
+         DATA  02,  12,   12,   $FF,     03   'Row 2   (DAY 2) Second 20-second water pulse
+         DATA  03,  12,   12,   $FF,     03   'Row 3   (DAY 3) Third 20-second water pulse
+         DATA  04,  12,   12,   $FF,     03   'Row 4   (DAY 4) Fourth 20-second water pulse
+         DATA  05,  12,   12,   $FF,     03   'Row 5   (DAY 5) Fifth 20-second water pulse
+         DATA  06,  12,   12,   $FF,     03   'Row 6   (DAY 6) Sixth 20-second water pulse
 
-'Experiment 1 (commented out) This experiment has a water pulse between every 24 hours 
+'Experiment 1 (commented out)
         '    Day  Hour  Min   Tag  EventByte
- 'ETable DATA  00,  00,   11,   $FF,     02   'Row 0   (DAY 1) Initialize pump with 30 second water pulse
-        'DATA  00,  00,   12,   $FF,     03   'Row 1   (DAY 1) First 20-second water pulse 
-        'DATA  01,  00,   12,   $FF,     03   'Row 2   (DAY 2) Second 20-second water pulse
-        'DATA  02,  00,   12,   $FF,     03   'Row 3   (DAY 3) Third 20-second water pulse 
-        'DATA  03,  00,   12,   $FF,     03   'Row 1   (DAY 4) Fourth 20-second water pulse 
-        'DATA  04,  00,   12,   $FF,     03   'Row 2   (Day 5) Fifth 20-second water pulse 
+'  ETable DATA  00,  00,   11,   $FF,     02   'Row 0   (DAY 1) Initialize pump with 30 second water pulse
+'         DATA  00,  00,   12,   $FF,     03   'Row 1   (DAY 1) First 20-second water pulse
+'         DATA  00,  10,   12,   $FF,     03   'Row 2   (DAY 1) Second 20-second water pulse
+'         DATA  00,  20,   12,   $FF,     03   'Row 3   (DAY 2) Third 20-second water pulse
+'         DATA  01,  06,   12,   $FF,     03   'Row 4   (DAY 2) Fourth 20-second water pulse
+'         DATA  01,  16,   12,   $FF,     03   'Row 5   (Day 3) Fifth 20-second water pulse
+'         DATA  02,  02,   12,   $FF,     03   'Row 6   (Day 3) Sixth 20-second water pulse
 
-  'Experiment 2 (commented out)
+'Experiment 2 (commented out)
           '    Day  Hour  Min   Tag  EventByte
-'ETable DATA   00,  00,   0,  $FF,     02   'Row 0   (DAY 1) Initialize pump with 30 second water pulse
-        'DATA  00,  00,   1,  $FF,     03   'Row 1   (DAY 1) First 20-second water pulse 
-        'DATA  00,  08,   0,  $FF,     03   'Row 2   (DAY 1) Second 20-second water pulse
-        'DATA  00,  16,   0,  $FF,     03   'Row 3   (DAY 1) Third 20-second water pulse 
-        'DATA  01,  00,   0,  $FF,     03   'Row 4   (DAY 2) Fourth 20-second water pulse 
-        'DATA  01,  08,   0,  $FF,     03   'Row 5   (DAY 2) Fifth 20-second water pulse
-        'DATA  01,  16,   0,  $FF,     03   'Row 6   (DAY 2) Sixth 20-second water pulse 
-        'DATA  02,  00,   0,  $FF,     03   'Row 7   (DAY 3) Seventh 20-second water pulse 
-        'DATA  02,  08,   0,  $FF,     03   'Row 8   (DAY 3) Eight 20-second water pulse
-        'DATA  02,  16,   0,  $FF,     03   'Row 9   (DAY 3) Ninth 20-second water pulse 
-        'DATA  03,  00,   0,  $FF,     03   'Row 10  (DAY 4) Tenth 20-second water pulse 
-        'DATA  03,  08,   0   $FF,     03   'Row 11  (DAY 4) Eleventh 20-second water pulse
-        'DATA  03,  16,   0,  $FF,     03   'Row 12  (DAY 4) Twelvth 20-second water pulse 
-        'DATA  04,  00,   0,  $FF,     03   'Row 13  (Day 5) Thirteenth 20-second water pulse 
+'  ETable DATA  00,  00,   11,   $FF,     02   'Row 0   (DAY 1) Initialize pump with 30 second water pulse
+'         DATA  00,  00,   12,   $FF,     03   'Row 1   (DAY 1) First 20-second water pulse
+'         DATA  01,  00,   12,   $FF,     03   'Row 2   (DAY 2) Second 20-second water pulse
+'         DATA  02,  00,   12,   $FF,     03   'Row 3   (DAY 3) Third 20-second water pulse
 
         ' Experiment 1:
-        ' Once for 30 seconds, again for 30 seconds (1 minute apart)
-        ' Afterwards, run for 30 seconds every 24 hours 
-       
+        ' Once for 30 seconds, again for 20 seconds (1 minute apart)
+        ' Afterwards, run for 20 seconds every 10 hours
+
 
         ' Experiment 2:
         ' Once for 30 seconds, again for 20 seconds (1 minute apart)
-        ' Afterwards, run for 20 seconds every 8 hours 
-  
+        ' Afterwards, run for 20 seconds every 24 hours
