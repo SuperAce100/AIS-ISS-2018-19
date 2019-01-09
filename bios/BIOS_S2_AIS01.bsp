@@ -504,6 +504,41 @@ P3vector:
          DATA  04,  12,   12,   $FF,     03   'Row 4   (DAY 4) Fourth 20-second water pulse
          DATA  05,  12,   12,   $FF,     03   'Row 5   (DAY 5) Fifth 20-second water pulse
          DATA  06,  12,   12,   $FF,     03   'Row 6   (DAY 6) Sixth 20-second water pulse
+         DATA  00,  00,   00,   $FF,     00   'Blank Row
+         DATA  00,  00,   00,   $FF,     00   'Blank Row
+         DATA  00,  00,   00,   $FF,     00   'Blank Row
+         DATA  00,  00,   00,   $FF,     00   'Blank Row
+         DATA  00,  00,   00,   $FF,     00   'Blank Row
+         DATA  00,  00,   00,   $FF,     00   'Blank Row
+         DATA  00,  00,   00,   $FF,     00   'Blank Row
+         DATA  00,  00,   00,   $FF,     00   'Blank Row
+         DATA  00,  00,   00,   $FF,     00   'Blank Row
+         DATA  00,  00,   00,   $FF,     00   'Blank Row
+         DATA  00,  00,   00,   $FF,     00   'Blank Row
+         DATA  00,  00,   00,   $FF,     00   'Blank Row
+         DATA  00,  00,   00,   $FF,     00   'Blank Row
+         DATA  00,  00,   00,   $FF,     00   'Blank Row
+         DATA  00,  00,   00,   $FF,     00   'Blank Row
+         DATA  00,  00,   00,   $FF,     00   'Blank Row
+         DATA  00,  00,   00,   $FF,     00   'Blank Row
+         DATA  00,  00,   00,   $FF,     00   'Blank Row
+         DATA  00,  00,   00,   $FF,     00   'Blank Row
+         DATA  00,  00,   00,   $FF,     00   'Blank Row
+         DATA  00,  00,   00,   $FF,     00   'Blank Row
+         DATA  00,  00,   00,   $FF,     00   'Blank Row
+         DATA  00,  00,   00,   $FF,     00   'Blank Row
+         DATA  00,  00,   00,   $FF,     00   'Blank Row
+         DATA  00,  00,   00,   $FF,     00   'Blank Row
+         DATA  00,  00,   00,   $FF,     00   'Blank Row
+         DATA  00,  00,   00,   $FF,     00   'Blank Row
+         DATA  00,  00,   00,   $FF,     00   'Blank Row
+         DATA  00,  00,   00,   $FF,     00   'Blank Row
+         DATA  00,  00,   00,   $FF,     00   'Blank Row
+         DATA  00,  00,   00,   $FF,     00   'Blank Row
+         DATA  00,  00,   00,   $FF,     00   'Blank Row
+         DATA  00,  00,   00,   $FF,     00   'Blank Row
+         DATA  00,  00,   00,   $FF,     00   'Blank Row
+                  
 
 'Experiment 1 (commented out)
         '    Day  Hour  Min   Tag  EventByte
